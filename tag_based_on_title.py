@@ -1,11 +1,14 @@
 import pywikibot
 import requests
+import urllib3
 
 # The name space to retrieve pages from
 # https://www.mediawiki.org/wiki/Manual:Namespace#Built-in_namespaces to see available namespaces
 NAMESPACE = 6
 # Number of pages to extract at a time; used in get_pages_json() in params for "aplimit"
 PAGES_LIMIT = 2
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def get_api_url() -> str:
@@ -57,16 +60,31 @@ def get_categories(title: str) -> []:
 
     categories = []
 
-    if any(word in title for word in ["Memo", "memo"]):
-        categories.append("Memos")
-    if any(word in title for word in ["Interview", "interview"]):
-        categories.append("Interviews")
     if any(word in title for word in ["Agenda", "agenda"]):
         categories.append("Agendas")
-    if any(word in title for word in ["Letter", "letter"]):
-        categories.append("Letters")
-    if any(word in title for word in ["Guide", "guide"]):
+    if any(word in title for word in ["Charter", "charter"]):
+        categories.append("Charters")
+    if any(word in title for word in ["Flyer", "flyer"]):
+        categories.append("Flyers")
+    if any(word in title for word in ["Guidance", "guidance", "Guide", "guide"]):
         categories.append("Guides")
+    if any(word in title for word in ["Interview", "interview"]):
+        categories.append("Interviews")
+    if any(word in title for word in ["Letter", "letter"]):
+        if any(word in title for word in ["Newsletter", "newsletter"]):
+            categories.append("Newsletters")
+        else:
+            categories.append("Letters")
+    if any(word in title for word in ["Memo", "memo"]):
+        categories.append("Memos")
+    if any(word in title for word in ["Minutes", "minutes"]):
+        categories.append("Minutes")
+    if any(word in title for word in ["Plan", "plan"]):
+        categories.append("Plans")
+    if any(word in title for word in ["Table", "table"]):
+        categories.append("Tables")
+    if any(word in title for word in ["Transition", "transition"]):
+        categories.append("Transition papers")
 
     return categories
 
