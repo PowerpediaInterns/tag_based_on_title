@@ -1,5 +1,5 @@
 # tag_based_on_title
-Tags a desired Namespace with a category based on its title
+Tags a desired Namespace with a category based on its title.
 
 ## Class variables for customization
 ### NAMESPACE
