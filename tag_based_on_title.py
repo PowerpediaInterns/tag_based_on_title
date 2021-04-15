@@ -6,7 +6,9 @@ import urllib3
 # https://www.mediawiki.org/wiki/Manual:Namespace#Built-in_namespaces to see available namespaces
 NAMESPACE = 6
 # Number of pages to extract at a time; used in get_pages_json() in params for "aplimit"
-PAGES_LIMIT = 2
+PAGES_LIMIT = 3
+# Text file bot will read and write last page title
+TEXT_FILE = "titleBot_last_page.txt"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -122,8 +124,15 @@ def main() -> None:
     url = get_api_url()
     print(url)
 
+    # Creates file if it does not exist
+    open(TEXT_FILE, "a")
+
+    with open(TEXT_FILE, "r") as f:
+        last_title = f.readline().strip()
+        print("Starting from:", last_title)
+
     # Retrieving the pages JSON and extracting page titles
-    pages_json = get_pages_json(url)
+    pages_json = get_pages_json(url, last_title)
     pages = pages_json["query"]["allpages"]
     print("Pages to be scanned:", pages)
 
@@ -136,35 +145,16 @@ def main() -> None:
             for cat in cats_to_add:
                 add_category(curr_title, "[[Category:" + cat + "]]")
 
-    # Extracting title to continue iterating from
+    # Extracting title to continue iterating from next run
     if "continue" in pages_json:
-        continue_from = pages_json["continue"]["apcontinue"]
-        print("Continuing from:", continue_from)
+        continue_from_title = pages_json["continue"]["apcontinue"]
+        print("Continuing from:", continue_from_title, "next run.")
     else:
-        continue_from = ""
+        continue_from_title = ""
 
-    # Continue iterating through wiki
-    while continue_from:
-        # Retrieving the pages JSON and extracting page titles
-        pages_json = get_pages_json(url, continue_from)
-        pages = pages_json["query"]["allpages"]
-        print("Pages to be scanned:", pages)
-
-        # Tagging operations
-        for page in pages:
-            curr_title = page["title"]
-            cats_to_add = get_categories(curr_title)
-            if cats_to_add:
-                print("Adding categories", cats_to_add, "to '%s'" % curr_title)
-                for cat in cats_to_add:
-                    add_category(curr_title, "[[Category:" + cat + "]]")
-
-        # Extracting title to continue iterating from
-        if "continue" in pages_json:
-            continue_from = pages_json["continue"]["apcontinue"]
-            print("Continuing from:", continue_from)
-        else:
-            continue_from = ""
+    with open(TEXT_FILE, "w+") as f:
+        f.write(continue_from_title)
+        print("Wrote", continue_from_title, "in", TEXT_FILE)
 
     print("No pages left to be tagged")
 
